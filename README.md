@@ -7,8 +7,9 @@ Atom-formatted web feed with product's price, image URL and title.
 
 ## Inspiration
 https://github.com/captn3m0/ideas#-amazon-price-tracker-with-rss
-_It would be great if a similar bridge for Flipkart is added and hosted for free somewhere!._ Till then, run this script
-before starting your RSS feed reader. For `newsboat`, it would be like:
+
+_It would be great if a similar bridge for Flipkart is added and hosted for free somewhere!._ Till then, use a script
+similar to the one added below for starting your RSS feed reader. For `newsboat`, it would be like:
 ```
 newsboat() {
 	echo "Initializing background process"
@@ -20,3 +21,5 @@ newsboat() {
 }
 ```
 in your rc file.
+
+The feed url will be of the form, `http://localhost:12564/flipkart?link=<Product page url>`
