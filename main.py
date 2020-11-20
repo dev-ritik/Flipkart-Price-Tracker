@@ -38,10 +38,10 @@ def price_check(url: str):
     """
     res = requests.get(url, timeout=5)
     content = BeautifulSoup(res.content, "html.parser")
-    price_div = content.find('div', attrs={"class": "_3qQ9m1"}).text
+    price_div = content.find('div', attrs={"class": "_30jeq3 _16Jk6d"}).text
     price = int((price_div.replace(",", ""))[1:])
-    name = content.find('span', attrs={"class": "_35KyD6"}).text
-    image_url = content.find('div', attrs={"class": "_2_AcLJ"})["style"].lstrip('background-image:url(')[:-1]
+    name = content.find('span', attrs={"class": "B_NuCI"}).text
+    image_url = content.find('div', attrs={"class": "q6DClP"})["style"].lstrip('background-image:url(')[:-1]
     return name, price, image_url
 
 
@@ -55,7 +55,10 @@ class GetHandler(BaseHTTPRequestHandler):
         parsed_path = parse.urlparse(self.path)
         if parsed_path.path == '/flipkart':
             url = parsed_path.query.lstrip('link=')
-            name, price, image_url = price_check(url)
+            try:
+                name, price, image_url = price_check(url)
+            except:
+                name = price = image_url = 'Error'
             self.send_response(200)
             self.send_header('Content-Type',
                              'text/plain; charset=utf-8')
