@@ -23,3 +23,7 @@ newsboat() {
 in your rc file.
 
 The feed url will be of the form, `http://localhost:12564/flipkart?link=<Product page url>`
+
+_Add extra param for adding constant data to feed_. Example:
+`http://localhost:12564/flipkart?link=<Product page url>?my_price=1000`
+This wont do anything other than returning it with the feed. It can be used as a note! :p

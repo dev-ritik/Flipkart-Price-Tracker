@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler
 from urllib import parse
+from urllib.parse import urlencode
 
 import requests
 from bs4 import BeautifulSoup
@@ -24,7 +25,8 @@ FEED_TEMPLATE = """\
         <updated>{time}</updated>
         <id>{url_target}</id>
         <link rel="alternate" type="text/html" href="{url_target}"/>
-        <content type="html">&lt;img width="300" style="max-width:300;max-height:300" src="{image_url}" alt="{title}" /&gt;&lt;br/&gt;Price: {price} INR</content>
+        <content type="html">&lt;img width="300" style="max-width:300;max-height:300" src="{image_url}" alt="{title}" 
+        /&gt;&lt;br/&gt;Price: {price} INR&lt;br&gt;{attrs_str}</content>
     </entry>
 </feed>
 """
@@ -49,12 +51,24 @@ def escape_url(url) -> str:
     return url.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
+def extract_params(query):
+    params = dict(parse.parse_qsl(query))
+    attrs = {}
+    extra_keys = set(params.keys()) - {'link', 'pid', 'lid'}
+    for e in extra_keys:
+        attrs[e] = params[e]
+        del params[e]
+    base_url = params['link']
+    del params['link']
+    return base_url + '&' + urlencode(params), attrs
+
+
 class GetHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed_path = parse.urlparse(self.path)
         if parsed_path.path == '/flipkart':
-            url = parsed_path.query.lstrip('link=')
+            url, attrs = extract_params(parsed_path.query)
             try:
                 name, price, image_url = price_check(url)
             except:
@@ -65,10 +79,11 @@ class GetHandler(BaseHTTPRequestHandler):
             self.end_headers()
             time = datetime.now(timezone.utc)
             full_url = ''.join([f'http://{HOST}:{PORT}/', self.path])
+            attrs_str = ''.join(f'{key.title()}: {value}&lt;br&gt;' for key, value in attrs.items())
             self.wfile.write(
                 FEED_TEMPLATE.format(title=name, time=time.isoformat(), url_target=escape_url(url),
                                      feed_src=escape_url(full_url),
-                                     image_url=image_url, price=price).encode('utf-8'))
+                                     image_url=image_url, price=price, attrs_str=attrs_str).encode('utf-8'))
         else:
             self.send_error(404, "Path not found {}".format(self.path))
 
